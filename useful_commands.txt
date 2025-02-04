@@ -1,0 +1,8 @@
+# download data in Windows (alternative to wget in Linux)
+curl -L -o yellow_tripdata_2020-12.csv.gz https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2020-12.csv.gz
+
+# extract .gz files
+gunzip yellow_tripdata_2020-12.csv.gz
+
+# list files in -l (long listing) -h (file size human readable)
+ls -lh
