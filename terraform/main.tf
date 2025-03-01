@@ -27,4 +27,5 @@ resource "google_bigquery_dataset" "ny_taxi_ingest_airflow_dataset" {
 
   # Set default table expiration to 1 days (optional)
   default_table_expiration_ms = 1 * 24 * 60 * 60 * 1000
+  delete_contents_on_destroy = true
 }
