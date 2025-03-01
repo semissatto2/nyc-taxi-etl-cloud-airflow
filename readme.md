@@ -41,6 +41,7 @@ project/
 - Docker
 - Docker Compose
 - Google Cloud Platform account with access to BigQuery and GCS
+- A Google Cloud credential (from Google Cloud Platform you can generate a .json credential for your project)
 - Terraform
 
 ## Setup Instructions
