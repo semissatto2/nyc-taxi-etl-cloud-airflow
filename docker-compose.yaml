@@ -64,7 +64,7 @@ x-airflow-common:
     # TODO: Please change GCP_PROJECT_ID & GCP_GCS_BUCKET, as per your config
     GCP_PROJECT_ID: 'ny-taxi-ingest-airflow'
     GCP_GCS_BUCKET: 'ny-taxi-ingest-airflow-bucket'
-    BIGQUERY_DATASET: 'ny_taxi_ingest_airflow_dataset'
+    BIGQUERY_DATASET: 'ny_taxi'
 
   volumes:
     - ./dags:/opt/airflow/dags
