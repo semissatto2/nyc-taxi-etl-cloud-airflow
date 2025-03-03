@@ -9,25 +9,34 @@ import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
 from google.cloud import storage
-from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateExternalTableOperator
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCreateExternalTableOperator,
+)
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 BUCKET = os.environ.get("GCP_GCS_BUCKET")
 
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
-BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", 'ny_taxi_ingest_airflow_dataset')
+BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "ny_taxi")
 
-URL_PREFIX = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow' 
-URL_TEMPLATE = URL_PREFIX + '/yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}.csv.gz'
-OUTPUT_FILE_TEMPLATE = AIRFLOW_HOME + '/yellow_trip_{{ execution_date.strftime(\'%Y-%m\') }}.csv'
-LOCAL_FILE_TEMPLATE = AIRFLOW_HOME + '/yellow_trip_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
-GCS_OUTPUT_FILE_TEMPLATE = 'yellow_trip_{{ execution_date.strftime(\'%Y-%m\') }}.parquet'
+URL_PREFIX = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow"
+URL_TEMPLATE = (
+    URL_PREFIX + "/yellow_tripdata_{{ execution_date.strftime('%Y-%m') }}.csv.gz"
+)
+OUTPUT_FILE_TEMPLATE = (
+    AIRFLOW_HOME + "/yellow_trip_{{ execution_date.strftime('%Y-%m') }}.csv"
+)
+LOCAL_FILE_TEMPLATE = (
+    AIRFLOW_HOME + "/yellow_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
+)
+GCS_OUTPUT_FILE_TEMPLATE = "yellow_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
 
 
 def format_to_parquet(src_file):
-    parquet_file = src_file.replace('.csv', '.parquet')
+    parquet_file = src_file.replace(".csv", ".parquet")
     table = pv.read_csv(src_file)
     pq.write_table(table, parquet_file)
+
 
 # NOTE: takes 20 mins, at an upload speed of 800kbps. Faster if your internet has a better upload speed
 def upload_to_gcs(bucket, object_name, local_file):
@@ -53,8 +62,8 @@ def upload_to_gcs(bucket, object_name, local_file):
 
 default_args = {
     "owner": "airflow",
-    "start_date": datetime(2021, 3, 1),  # We are going to ingest data from 2020
-    "end_date": datetime(2021, 5, 1),  # Up to 2021
+    "start_date": datetime(2019, 1, 1),  # We are going to ingest data from 2019
+    "end_date": datetime(2021, 1, 1),  # Up to 2020
     "depends_on_past": False,
     "retries": 1,
 }
@@ -66,12 +75,12 @@ with DAG(
     default_args=default_args,
     catchup=True,  # Allow DAG execute for the 'past'
     max_active_runs=1,
-    tags=['dtc-de'],
+    tags=["dtc-de"],
 ) as dag:
 
     download_and_extract_dataset_task = BashOperator(
         task_id="download_dataset_task",
-        bash_command=f"curl -sSL {URL_TEMPLATE} | gunzip > {OUTPUT_FILE_TEMPLATE}"
+        bash_command=f"curl -sSL {URL_TEMPLATE} | gunzip > {OUTPUT_FILE_TEMPLATE}",
     )
 
     format_to_parquet_task = PythonOperator(
@@ -98,7 +107,7 @@ with DAG(
             "tableReference": {
                 "projectId": PROJECT_ID,
                 "datasetId": BIGQUERY_DATASET,
-                "tableId": 'yellow_tripdata_{{ execution_date.strftime(\'%Y-%m\') }}',
+                "tableId": "yellow_tripdata_{{ execution_date.strftime('%Y-%m') }}",
             },
             "externalDataConfiguration": {
                 "sourceFormat": "PARQUET",
@@ -107,4 +116,9 @@ with DAG(
         },
     )
 
-    download_and_extract_dataset_task >> format_to_parquet_task >> local_to_gcs_task >> bigquery_external_table_task
+    (
+        download_and_extract_dataset_task
+        >> format_to_parquet_task
+        >> local_to_gcs_task
+        >> bigquery_external_table_task
+    )

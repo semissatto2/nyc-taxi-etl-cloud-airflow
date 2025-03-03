@@ -7,6 +7,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
+import pandas as pd
 
 from google.cloud import storage
 from airflow.providers.google.cloud.operators.bigquery import (
@@ -19,17 +20,17 @@ BUCKET = os.environ.get("GCP_GCS_BUCKET")
 AIRFLOW_HOME = os.environ.get("AIRFLOW_HOME", "/opt/airflow/")
 BIGQUERY_DATASET = os.environ.get("BIGQUERY_DATASET", "ny_taxi")
 
-URL_PREFIX = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green"
+URL_PREFIX = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv"
 URL_TEMPLATE = (
-    URL_PREFIX + "/green_tripdata_{{ execution_date.strftime('%Y-%m') }}.csv.gz"
+    URL_PREFIX + "/fhv_tripdata_{{ execution_date.strftime('%Y-%m') }}.csv.gz"
 )
 OUTPUT_FILE_TEMPLATE = (
-    AIRFLOW_HOME + "/green_trip_{{ execution_date.strftime('%Y-%m') }}.csv"
+    AIRFLOW_HOME + "/fhv_trip_{{ execution_date.strftime('%Y-%m') }}.csv"
 )
 LOCAL_FILE_TEMPLATE = (
-    AIRFLOW_HOME + "/green_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
+    AIRFLOW_HOME + "/fhv_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
 )
-GCS_OUTPUT_FILE_TEMPLATE = "green_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
+GCS_OUTPUT_FILE_TEMPLATE = "fhv_trip_{{ execution_date.strftime('%Y-%m') }}.parquet"
 
 
 def format_to_parquet(src_file):
@@ -63,14 +64,14 @@ def upload_to_gcs(bucket, object_name, local_file):
 default_args = {
     "owner": "airflow",
     "start_date": datetime(2019, 1, 1),  # We are going to ingest data from 2019
-    "end_date": datetime(2021, 1, 1),  # Up to 2020
+    "end_date": datetime(2020, 1, 1),  # Up to 2020
     "depends_on_past": False,
     "retries": 1,
 }
 
 # NOTE: DAG declaration - using a Context Manager (an implicit way)
 with DAG(
-    dag_id="ingest_ny_green",
+    dag_id="ingest_ny_fhv",
     schedule_interval="0 6 1 * *",  # Execute At 06:00 on day-of-month 1.
     default_args=default_args,
     catchup=True,  # Allow DAG execute for the 'past'
@@ -107,7 +108,7 @@ with DAG(
             "tableReference": {
                 "projectId": PROJECT_ID,
                 "datasetId": BIGQUERY_DATASET,
-                "tableId": "green_tripdata_{{ execution_date.strftime('%Y-%m') }}",
+                "tableId": "fhv_tripdata_{{ execution_date.strftime('%Y-%m') }}",
             },
             "externalDataConfiguration": {
                 "sourceFormat": "PARQUET",

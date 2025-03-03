@@ -60,11 +60,6 @@ project/
    BUCKET_NAME=your-gcs-bucket-name
    ```
 
-3. **Build the Docker environment:**
-   ```bash
-   docker-compose up --build
-   ```
-
 4. **Initialize Terraform:**
    ```bash
    cd terraform
@@ -72,8 +67,15 @@ project/
    terraform apply
    ```
 
+3. **Build the Docker environment:**
+   ```bash
+   docker-compose up --build
+   ```
+
 5. **Access Airflow UI:**
    Open [http://localhost:8080](http://localhost:8080) in your browser to monitor DAGs.
+   
+   The default user/password are `airflow`
 
 6. **Trigger the pipeline:**
    Activate and run the DAGs from the Airflow UI.
