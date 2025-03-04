@@ -17,7 +17,30 @@ models:
         tests:
             - not_null:
                 severity: error
-      
+
+  - name: fct_taxi_trips_quarterly_revenue
+    description: >
+      Aggregated table of all taxi trips corresponding to both service zones (Green and yellow) per year, quarter and service.
+      The table contains quarter sums of the total amount.
+    columns:
+      - name: revenue_quarter_total_amount
+        description: Quarter sum of the the total_amount of the fare charged for the trip per service, year and quarter.
+        tests:
+            - not_null:
+                severity: error
+
+  - name: fct_taxi_monthly_fare_p95
+    description: >
+      Information about amount fare percentiles by service type, year and month
+
+  - name: dim_fhv_trips
+    description: >
+      Information about FHV trips
+
+  - name: fct_fhv_monthly_zone_traveltime_p90
+    description: >
+      Information about FHV trips
+
   - name: fact_trips
     description: >
       Taxi trips corresponding to both service zones (Green and yellow).
